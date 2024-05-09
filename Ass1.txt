@@ -1,0 +1,47 @@
+# Read the dataset
+import pandas as pd
+df=pd.read_csv("C:/Users/DELL/Desktop/TY-2/DMW/Heart.csv") 
+print(df)
+
+# Find missing values & replace the missing values with suitable alternative 
+df.isnull().sum() 
+df['Thal'].mode()
+df['Thal'].fillna(str(df['Thal'].mode()),inplace=True)
+df['Ca'].fillna(df['Ca'].mean(),inplace=True)
+
+#Removing Inconsistency
+#Here we need to remove duplicates
+df.drop_duplicates(inplace=True)
+
+# Boxplot
+import matplotlib.pyplot as plt
+import numpy as np
+plt.boxplot(df.Age)
+plt.show()
+plt.boxplot(df.Sex)
+plt.show()
+
+# Bar plot for 'ChestPain' column
+df['ChestPain'].value_counts().plot(kind='bar')
+plt.xlabel('Chest Pain Type')
+plt.ylabel('Frequency')
+plt.title('Distribution of Chest Pain Types')
+plt.show()
+
+# Histogram
+import seaborn as sns  
+sns.histplot([df.Age], kde=True) # Same for all attribute
+
+# Find data types of each column 
+df.dtypes 
+
+# Finding out zero's
+zeros_count = (df == 0).sum()
+print("Zeros Count:\n", zeros_count)
+
+# Find mean Age
+mean_age = df['Age'].mean()
+print("Mean Age of Patients:", mean_age)
+
+# Find shape of data
+df.shape

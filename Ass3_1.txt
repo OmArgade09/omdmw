@@ -1,0 +1,187 @@
+import pandas as pd
+
+def dataframe_to_dict(df):
+    transactions_dict = {}
+    for idx, row in df.iterrows():
+        transaction_items = [item for item in row if pd.notna(item)]
+        transactions_dict[idx + 1] = transaction_items
+    return transactions_dict
+
+data = [['Milk', 'Bread', 'Butter'],
+        ['Milk', 'Bread', pd.NA, pd.NA],
+        ['Milk', 'Eggs', pd.NA, pd.NA],
+        ['Bread', 'Eggs', pd.NA, pd.NA],
+        ['Milk', 'Bread', 'Eggs', 'Butter'],
+        ['Tea', 'Bread', 'Eggs', pd.NA]]
+
+#def item_set():
+  #  items = {1 : ['b','d','c','a'],2 : ['e','d','c'],
+   #          3 : ['a','b'], 4 : ['a','c','d'], 
+    #         5 : ['f','g','d','b']}
+    #print(items)
+    #return items
+#items = item_set()
+df = pd.DataFrame(data, columns=['Item1', 'Item2', 'Item3', 'Item4'])
+items = dataframe_to_dict(df)
+#for key, value in items.items():
+#    print("List associated with key", key, ":", value)
+
+def seperate_items(items,list_1):
+    for key, value in items.items():
+        for i in value:
+            if i not in list_1:
+                list_1.append(i)
+    print(list_1)
+
+list_1 = []
+seperate_items(items, list_1)
+print("List is : ", list_1)
+
+count = 0
+k = 0
+dict_1 = {}
+def cal_support_for_each_item(list_1,items,count,dict_1,k):
+    while(k<len(list_1)):
+        count = 0
+        for key, value in items.items():
+            if list_1[k] in value:
+                count = count+1
+        dict_1[list_1[k]] = count
+        k = k + 1
+    return dict_1
+dict_1 = cal_support_for_each_item(list_1, items, count, dict_1,k)
+print(dict_1)
+
+def delete_min_support_items(dict_1,min_sup):
+    keys_to_delete = []
+    for key, value in dict_1.items():
+        if value < 2:
+            keys_to_delete.append(key)
+    for key in keys_to_delete:
+        del dict_1[key]
+min_sup = 2
+delete_min_support_items(dict_1, min_sup)
+print(dict_1)
+
+def increasing_order(dict_1):
+    sorted_dict = dict(sorted(dict_1.items(), key=lambda item: item[1],reverse=True))
+    return sorted_dict
+dict_2 = increasing_order(dict_1)
+print(dict_2)
+
+print(items)
+
+dict_3 = {}
+k = 0
+list_2 = []
+def updated_dictionary(dict_2, items, dict_3,list_2):
+    for key_1, value_1 in items.items():
+        list_2 = []
+        for key_2, value_2 in dict_2.items():
+            if key_2 in value_1:
+                list_2.append(key_2)
+                dict_3[key_1] = list_2
+    return dict_3
+dict_3 = updated_dictionary(dict_2, items, dict_3,list_2)
+print(dict_3)
+
+class TreeNode:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.children = []
+
+    def add_child(self, child_key, child_value):
+        child = TreeNode(child_key, child_value)
+        self.children.append(child)
+        return child
+
+    def __str__(self):
+        return f"({self.key}, {self.value})"
+      
+root = TreeNode('root', 'root_val')
+
+val = 1
+lst = []
+def basic_tree(node,lst):
+    parent_node = node
+    for i in lst:
+        parent_node = parent_node.add_child(i, val)
+first_lst = []
+for key,value in dict_3.items():
+    for i in value:
+        first_lst.append(i)
+    break
+basic_tree(root,first_lst)
+lst1 = []
+def check_equality(par, ele):
+     if par != root:
+         par.value += 1
+     for i in par.children:
+         if ele == i.key:
+             return True
+     return False
+ 
+def get_par(par, ele):
+    for i in par.children:
+        if ele == i.key:
+            return i
+    return None
+
+def add_child_(par, child):
+    par.add_child(child.key,1)
+ 
+a = 0   
+lst = []
+flag = 0
+k = 0
+for key,value in dict_3.items():
+    if a == 0:
+        for i in value:
+            a = 1
+    else:
+        flag = 0
+        par = root
+        lst = []
+        k = 0
+        for i in value:
+            lst.append(i)
+        while(k < len(lst)):
+            if flag == 0:
+                if check_equality(par, lst[k]):
+                    flag = 0
+                    par = get_par(par, lst[k])
+                    k += 1
+                    if par.key == lst[len(lst)-1]:
+                        check_equality(par, par)
+                else:
+                    flag = 1
+            else:
+                node = TreeNode(lst[k], 1)
+                add_child_(par, node)
+                par = get_par(par, lst[k])
+                k += 1          
+
+def print_tree(node, depth=0):
+    """
+    
+
+    Parameters
+    ----------
+    node : TYPE
+        DESCRIPTION.
+    depth : TYPE, optional
+        DESCRIPTION. The default is 0.
+
+    Returns
+    -------
+    None.
+
+    """
+    if node:
+        print("  " * depth + str(node))
+        for child in node.children:
+            print_tree(child, depth + 1)
+
+print("Tree:")
+print_tree(root)

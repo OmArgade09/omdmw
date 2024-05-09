@@ -1,0 +1,130 @@
+class TreeNode:
+    def __init__(self, item, count, parent):
+        self.item = item
+        self.count = count
+        self.parent = parent
+        self.children = {}
+
+
+def read_dataset(file_path='/content/online_retail.csv'):
+    with open(file_path, 'r') as file:
+        dataset = [line.strip().split() for line in file.readlines()]
+    return dataset
+
+
+def count_items(dataset):
+    item_counts = {}
+    for transaction in dataset:
+        for item in transaction:
+            item_counts[item] = item_counts.get(item, 0) + 1
+    return item_counts
+
+
+def filter_items(item_counts, min_support):
+    filtered_items = {item: count for item, count in item_counts.items() if count >= min_support}
+    return filtered_items
+
+
+def sort_items(item_counts):
+    sorted_items = sorted(item_counts.items(), key=lambda x: (-x[1], x[0]))
+    return [item[0] for item in sorted_items]
+
+
+def insert_tree(root, transaction, count):
+    if transaction[0] in root.children:
+        root.children[transaction[0]].count += count
+    else:
+        root.children[transaction[0]] = TreeNode(transaction[0], count, root)
+    if len(transaction) > 1:
+        insert_tree(root.children[transaction[0]], transaction[1:], count)
+
+
+def construct_tree(dataset, sorted_items):
+    root = TreeNode(None, 0, None)
+    for transaction in dataset:
+        if transaction and len(transaction) > 0:  # Check if transaction is not empty and has elements
+            sorted_transaction = [item for item in sorted_items if item in transaction]
+            if sorted_transaction:  # Check if sorted_transaction is not empty
+                insert_tree(root, sorted_transaction, 1)
+    return root
+
+
+
+
+def find_maximum_frequent_itemset(tree, min_support):
+    frequent_itemset = []
+
+    def traverse(node, prefix):
+        if node.item:
+            support = node.count
+            if support >= min_support:
+                frequent_itemset.append(prefix + [node.item])
+            for child in node.children.values():
+                traverse(child, prefix + [node.item])
+
+    traverse(tree, [])
+    return frequent_itemset
+
+
+def simulate_frequent_pattern_enumeration(tree, min_support):
+    frequent_patterns = []
+
+    def conditional_pattern_base(node):
+        patterns = []
+        while node:
+            prefix_path = []
+            while node.parent:
+                prefix_path.append(node.item)
+                node = node.parent
+            if len(prefix_path) > 1:
+                patterns.append((prefix_path[1:], node.count))
+            node = node.parent
+        return patterns
+
+    def mine_tree(node, prefix, min_support):
+        if node.children:
+            for item, child in node.children.items():
+                support = child.count
+                if support >= min_support:
+                    frequent_patterns.append(prefix + [item])
+                    conditional_base = conditional_pattern_base(child)
+                    conditional_tree = construct_tree(conditional_base, sort_items(count_items(conditional_base)))
+                    mine_tree(conditional_tree, prefix + [item], min_support)
+
+    mine_tree(tree, [], min_support)
+    return frequent_patterns
+
+
+def compare_with_apriori():
+    # Conduct a comparative analysis with Apriori algorithm
+    pass
+
+
+def main():
+    dataset = read_dataset("online_retail.csv")  # Adjust file path accordingly
+    min_support = 2  # Minimum support count threshold
+
+    item_counts = count_items(dataset)
+    filtered_items = filter_items(item_counts, min_support)
+    sorted_items = sort_items(filtered_items)
+
+    tree = construct_tree(dataset, sorted_items)
+
+    # a) Find maximum frequent itemset
+    max_frequent_itemset = find_maximum_frequent_itemset(tree, min_support)
+    print("Maximum frequent itemset:", max_frequent_itemset)
+
+    # b) Count transactions in the maximum frequent itemset
+    num_transactions = sum([len(transaction) for transaction in dataset])
+    print("Number of transactions in the maximum frequent itemset:", num_transactions)
+
+    # c) Simulate frequent pattern enumeration
+    frequent_patterns = simulate_frequent_pattern_enumeration(tree, min_support)
+    print("Frequent patterns:", frequent_patterns)
+
+    # d) Comparative analysis with Apriori algorithm
+    compare_with_apriori()
+
+
+if __name__ == "__main__":
+    main()
